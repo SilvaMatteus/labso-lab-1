@@ -1,5 +1,6 @@
 #include "xeu_utils/StreamParser.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <vector>
 #include <stdlib.h>
@@ -11,8 +12,8 @@ using namespace std;
 int main() {
     /* Getting username and hostname to show in shell indicator */
     char* username = getenv("USERNAME");
-    char* hostname = (char*) malloc(sizeof(char)*15);
-    gethostname(hostname, 15);
+    char* hostname = (char*) malloc(sizeof(char) * HOST_NAME_MAX);
+    gethostname(hostname, sizeof(char) * HOST_NAME_MAX);
     // ParsingState p = StreamParser().parse();
     // cout << p.dump();
     // vector<Command> commands = p.commands();
