@@ -5,6 +5,9 @@
 #include <vector>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/wait.h>
 
 using namespace xeu_utils;
 using namespace std;
@@ -13,14 +16,51 @@ int main() {
     /* Getting username and hostname to show in shell indicator */
     char* username = getenv("USERNAME");
     char* hostname = (char*) malloc(sizeof(char) * HOST_NAME_MAX);
+
     gethostname(hostname, sizeof(char) * HOST_NAME_MAX);
-    // ParsingState p = StreamParser().parse();
-    // cout << p.dump();
-    // vector<Command> commands = p.commands();
+
+    vector<Command> commands;
+    ParsingState p;
+    Command c;
+
+    int statval;
+    
     while (true)
     {
-      printf("%s@%s => ", username, hostname);
-      ParsingState p = StreamParser().parse();
+        printf("%s@%s => ", username, hostname);
+      
+        p = StreamParser().parse();
+        commands = p.commands();
+
+        #ifdef DEBUG
+            cout << p.dump() << endl;
+        #endif
+        for (size_t i = 0; i < commands.size(); i++)
+        {
+             c = commands[i];
+	     int code;
+
+             int pid = fork();
+
+             if (pid == 0)
+             {
+                 code = execvp(c.args()[0].c_str(), c.argv());
+		 if (code == -1) printf("%s\n", strerror(errno));
+             }
+             else
+             {
+                 #ifdef DEBUG
+                     printf("PID %d: waiting for child\n", getpid());
+                 #endif
+                 wait(&statval);
+                 #ifdef DEBUG
+                     if(WIFEXITED(statval))
+                         printf("Child's exit code %d\n", WEXITSTATUS(statval));
+                     else
+                         printf("Child did not terminate with exit\n");
+                 #endif
+             }
+        }
     }
     return 0;
 }

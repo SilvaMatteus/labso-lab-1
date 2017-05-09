@@ -6,3 +6,9 @@ Run the following commands:
 make # builds the binary
 ./xeu # runs the binary
 ```
+
+Using debug mode:
+
+```bash
+CXXFLAGS="-DDEBUG" make # builds the binary with debug mode enabled
+```
