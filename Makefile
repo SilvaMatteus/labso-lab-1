@@ -2,7 +2,7 @@ OUTPUT=xeu
 SOURCES=*.cpp xeu_utils/*.cpp
 
 xeu: $(SOURCES)
-	g++ $(SOURCES) -o $(OUTPUT)
+	g++ $(SOURCES) $(CXXFLAGS) -o $(OUTPUT)
 
 clean:
 	
