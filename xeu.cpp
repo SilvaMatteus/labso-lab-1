@@ -14,9 +14,10 @@ using namespace std;
 
 int main() {
     /* Getting username and hostname to show in shell indicator */
-    char* username = getenv("USERNAME");
+    char* username = (char*) malloc(sizeof(char) * LOGIN_NAME_MAX);
     char* hostname = (char*) malloc(sizeof(char) * HOST_NAME_MAX);
 
+    getlogin_r(username, sizeof(char) * LOGIN_NAME_MAX);
     gethostname(hostname, sizeof(char) * HOST_NAME_MAX);
 
     vector<Command> commands;
