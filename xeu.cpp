@@ -32,6 +32,8 @@ int main() {
         p = StreamParser().parse();
         commands = p.commands();
 
+        if (commands.size() == 1 && !strcmp(commands[0].filename(), "exit")) return 0;
+
         #ifdef DEBUG
             cout << p.dump() << endl;
         #endif
@@ -45,7 +47,11 @@ int main() {
              if (pid == 0)
              {
                  code = execvp(c.args()[0].c_str(), c.argv());
-		 if (code == -1) printf("%s\n", strerror(errno));
+		 if (code == -1)
+                 {
+                     printf("%s\n", strerror(errno));
+                     exit(1);
+                 }
              }
              else
              {
