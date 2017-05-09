@@ -12,7 +12,8 @@
 using namespace xeu_utils;
 using namespace std;
 
-int main() {
+int main()
+{
     /* Getting username and hostname to show in shell indicator */
     char* username = (char*) malloc(sizeof(char) * LOGIN_NAME_MAX);
     char* hostname = (char*) malloc(sizeof(char) * HOST_NAME_MAX);
@@ -33,26 +34,29 @@ int main() {
         p = StreamParser().parse();
         commands = p.commands();
 
-        if (commands.size() == 1 && !strcmp(commands[0].filename(), "exit")) return 0;
+        if (commands.size() == 1 && !strcmp(commands[0].filename(), "exit")) break;
 
         #ifdef DEBUG
             cout << p.dump() << endl;
         #endif
+
         for (size_t i = 0; i < commands.size(); i++)
         {
              c = commands[i];
-	     int code;
+             int code;
 
              int pid = fork();
 
              if (pid == 0)
              {
                  code = execvp(c.args()[0].c_str(), c.argv());
-		 if (code == -1)
+
+                 if (code == -1)
                  {
                      printf("%s\n", strerror(errno));
                      exit(1);
                  }
+
              }
              else
              {
@@ -69,5 +73,6 @@ int main() {
              }
         }
     }
+
     return 0;
 }
