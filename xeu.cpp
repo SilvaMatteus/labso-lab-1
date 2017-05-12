@@ -28,7 +28,8 @@ int main()
     ParsingState p;
     Command c;
 
-    int statval;
+    int statval = 0;
+    pid_t pid, wpid;
     
     while (true)
     {
@@ -47,8 +48,7 @@ int main()
         {
             c = commands[i];
             int code;
-
-            int pid = fork();
+            pid = fork();
 
             if (pid == 0)
             {
@@ -65,9 +65,7 @@ int main()
             {
                 #ifdef DEBUG
                     printf("PID %d: waiting for child\n", getpid());
-                #endif
-                wait(&statval);
-                #ifdef DEBUG
+
                     if(WIFEXITED(statval))
                         printf("Child's exit code %d\n", WEXITSTATUS(statval));
                     else
@@ -75,6 +73,8 @@ int main()
                 #endif
             }
         }
+
+        while ((wpid = wait(&statval)) > 0);
     }
 
     return 0;
