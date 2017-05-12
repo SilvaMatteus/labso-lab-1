@@ -45,35 +45,35 @@ int main()
 
         for (size_t i = 0; i < commands.size(); i++)
         {
-             c = commands[i];
-             int code;
+            c = commands[i];
+            int code;
 
-             int pid = fork();
+            int pid = fork();
 
-             if (pid == 0)
-             {
-                 code = execvp(c.args()[0].c_str(), c.argv());
+            if (pid == 0)
+            {
+                code = execvp(c.args()[0].c_str(), c.argv());
 
-                 if (code == -1)
-                 {
-                     printf("%s\n", strerror(errno));
-                     exit(1);
-                 }
+                if (code == -1)
+                {
+                    printf("%s\n", strerror(errno));
+                    exit(1);
+                }
 
-             }
-             else
-             {
-                 #ifdef DEBUG
-                     printf("PID %d: waiting for child\n", getpid());
-                 #endif
-                 wait(&statval);
-                 #ifdef DEBUG
-                     if(WIFEXITED(statval))
-                         printf("Child's exit code %d\n", WEXITSTATUS(statval));
-                     else
-                         printf("Child did not terminate with exit\n");
-                 #endif
-             }
+            }
+            else
+            {
+                #ifdef DEBUG
+                    printf("PID %d: waiting for child\n", getpid());
+                #endif
+                wait(&statval);
+                #ifdef DEBUG
+                    if(WIFEXITED(statval))
+                        printf("Child's exit code %d\n", WEXITSTATUS(statval));
+                    else
+                        printf("Child did not terminate with exit\n");
+                #endif
+            }
         }
     }
 
