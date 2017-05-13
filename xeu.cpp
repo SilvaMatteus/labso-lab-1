@@ -52,7 +52,7 @@ int main()
 
             if (pid == 0)
             {
-                code = execvp(c.args()[0].c_str(), c.argv());
+                code = execvp(c.filename(), c.argv());
 
                 if (code == -1)
                 {
