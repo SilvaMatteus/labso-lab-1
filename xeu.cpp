@@ -11,6 +11,10 @@
 using namespace xeu_utils;
 using namespace std;
 
+#ifndef HOST_NAME_MAX
+    #define HOST_NAME_MAX _POSIX_HOST_NAME_MAX
+#endif
+
 int main()
 {
     passwd* user = getpwuid(getuid());
