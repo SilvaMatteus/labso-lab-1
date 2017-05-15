@@ -34,11 +34,13 @@ int main()
 
     int statval = 0;
     pid_t pid, wpid;
-    
+
+    int** fd;
+
     while (true)
     {
         printf("%s@%s => ", username, hostname);
-      
+
         p = StreamParser().parse();
         commands = p.commands();
 
@@ -48,6 +50,14 @@ int main()
             cout << p.dump() << endl;
         #endif
 
+        fd = (int**) malloc(commands.size()*sizeof(int*));
+
+        for (size_t i = 0; i < commands.size(); i++)
+        {
+            fd[i] = (int*) malloc(sizeof(int)*2);
+            if (pipe(fd[i]) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
+        }
+
         for (size_t i = 0; i < commands.size(); i++)
         {
             c = commands[i];
@@ -56,6 +66,19 @@ int main()
 
             if (pid == 0)
             {
+                if (commands.size() > 1)
+                {
+                    if (i < commands.size() - 1) // i STDOUT
+                    {
+                        close(fd[i][0]);
+                        dup2(fd[i][1], STDOUT_FILENO);
+                    }
+                    if (i > 0) // i-1 STDIN
+                    {
+                        close(fd[i - 1][1]);
+                        dup2(fd[i - 1][0], STDIN_FILENO);
+                    }
+                }
                 code = execvp(c.filename(), c.argv());
 
                 if (code == -1)
@@ -67,6 +90,7 @@ int main()
             }
             else
             {
+                close(fd[i][1]);
                 #ifdef DEBUG
                     printf("PID %d: waiting for child\n", getpid());
 
@@ -79,6 +103,13 @@ int main()
         }
 
         while ((wpid = wait(&statval)) > 0);
+
+        // freeing memory
+        for (size_t i = 0; i < commands.size(); i++)
+        {
+            free(fd[i]);
+        }
+        free(fd);
     }
 
     return 0;
