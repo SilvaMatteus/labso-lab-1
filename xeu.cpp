@@ -79,6 +79,7 @@ int main()
                         dup2(fd[i - 1][0], STDIN_FILENO);
                     }
                 }
+                if (strcmp(c.filename(), "ls") == 0) {c.add_arg("--color=always");}
                 code = execvp(c.filename(), c.argv());
 
                 if (code == -1)
