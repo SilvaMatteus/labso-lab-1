@@ -39,7 +39,7 @@ int main()
 
     while (true)
     {
-        printf("%s@%s => ", username, hostname);
+        printf("\e[41;1m%s@%s =>\33[0m ", username, hostname);
 
         p = StreamParser().parse();
         commands = p.commands();
