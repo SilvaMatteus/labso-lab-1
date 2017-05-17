@@ -37,9 +37,19 @@ int main()
 
     int** fd;
 
+    long cwd_size;
+    char *cwd_buf;
+    char *cwd_ptr;
+
+    cwd_size = pathconf(".", _PC_PATH_MAX);
+
     while (true)
     {
-        printf("\e[41;1m%s@%s =>\33[0m ", username, hostname);
+
+        if ((cwd_buf = (char *) malloc((size_t) cwd_size)) != NULL)
+            cwd_ptr = getcwd(cwd_buf, (size_t) cwd_size);
+
+        printf("\e[41;1m%s@%s:%s=>\33[0m ", username, hostname, cwd_ptr);
 
         p = StreamParser().parse();
         commands = p.commands();
