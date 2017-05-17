@@ -17,7 +17,7 @@ using namespace std;
     #define HOST_NAME_MAX _POSIX_HOST_NAME_MAX
 #endif
 
-int main()
+int main(int argc, char **argv)
 {
     passwd* user = getpwuid(getuid());
 
@@ -72,6 +72,20 @@ int main()
         {
             c = commands[i];
             int code;
+            
+            if (!strcmp(c.filename(), "cd"))
+            {
+                /* TODO: behaves wrong if using pipes */
+                if (commands.size() > 1) continue;
+
+                code = chdir(c.argv()[1]);
+                if (code == -1)
+                {
+                    printf("%s: %s\n", c.argv()[1], strerror(errno));
+                }
+                continue;
+            }
+            
             pid = fork();
 
             if (pid == 0)
@@ -89,12 +103,12 @@ int main()
                         dup2(fd[i - 1][0], STDIN_FILENO);
                     }
                 }
-                if (strcmp(c.filename(), "ls") == 0) {c.add_arg("--color=always");}
+                if (!strcmp(c.filename(), "ls")) c.add_arg("--color=always");
                 code = execvp(c.filename(), c.argv());
 
                 if (code == -1)
                 {
-                    printf("%s\n", strerror(errno));
+                    printf("%s: %s\n", c.filename(), strerror(errno));
                     exit(1);
                 }
 
