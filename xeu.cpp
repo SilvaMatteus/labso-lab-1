@@ -72,7 +72,7 @@ int main(int argc, char **argv)
         {
             c = commands[i];
             int code;
-            
+
             if (!strcmp(c.filename(), "cd"))
             {
                 /* TODO: behaves wrong if using pipes */
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
                 }
                 continue;
             }
-            
+
             pid = fork();
 
             if (pid == 0)
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
                         dup2(fd[i - 1][0], STDIN_FILENO);
                     }
                 }
-                if (!strcmp(c.filename(), "ls")) c.add_arg("--color=always");
+                // if (!strcmp(c.filename(), "ls")) c.add_arg("--color=always");
                 code = execvp(c.filename(), c.argv());
 
                 if (code == -1)
