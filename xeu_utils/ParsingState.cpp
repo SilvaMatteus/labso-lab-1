@@ -49,6 +49,8 @@ std::string ParsingState::dump() {
     ss << "> parsed_commands_: " << parsed_commands_.size() << std::endl;
     for (size_t i = 0; i < parsed_commands_.size(); i++) {
       const std::vector<std::string>& args = parsed_commands_[i].args();
+      ss << ">> [" << i << "].is_redirect_in: " << parsed_commands_[i].is_redirect_in << std::endl;
+      ss << ">> [" << i << "].is_redirect_out: " << parsed_commands_[i].is_redirect_out << std::endl;
       ss << ">> [" << i << "].args(): " << args.size() << std::endl;
       for (size_t j = 0; j < args.size(); j++) {
         ss << ">>> [" << j << "] " << args[j] << std::endl;
@@ -127,6 +129,37 @@ void ParsingState::parse_next(char c) {
       }
       break;
     }
+    
+   case '>':
+    // check if this is a redirect out
+    if (!backslash_ && quotes_ == NO_QUOTES) {
+      redirect_out_ = true;
+      if (!complete_command(false /* do not set this as a final state */)) {
+        // something like: "some_command | | other_command" happened
+        // even "cmd1 || cmd2" causes this, since we don't understand "||" as
+        // the OR operator, but instead we process it as two pipe symbols
+        error_ = true;
+        redirect_out_ = false;
+        throw std::runtime_error("syntax error near unexpected token `>'");
+      }
+      break;
+    }
+
+   case '<':
+    // check if this is a redirect in
+    if (!backslash_ && quotes_ == NO_QUOTES) {
+      redirect_in_ = true;
+      if (!complete_command(false /* do not set this as a final state */)) {
+        // something like: "some_command | | other_command" happened
+        // even "cmd1 || cmd2" causes this, since we don't understand "||" as
+        // the OR operator, but instead we process it as two pipe symbols
+        error_ = true;
+        redirect_in_ = false;
+        throw std::runtime_error("syntax error near unexpected token `<'");
+      }
+      break;
+    }
+
     // fall to default, this is not a pipe!
 
    default:
@@ -157,6 +190,14 @@ bool ParsingState::complete_command(bool in_final_state) {
   if (!current_command_.args().empty()) {
     parsed_commands_.push_back(current_command_);
     current_command_ = Command();
+    if (redirect_out_) {
+      current_command_.is_redirect_out = true;
+      redirect_out_ = false;
+    }
+    if (redirect_in_) {
+      current_command_.is_redirect_in = true;
+      redirect_in_ = false;
+    }
     return true; // new command added successfuly
   }
   return false; // could not add a new command: command is empty (no args)!

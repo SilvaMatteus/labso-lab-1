@@ -62,6 +62,8 @@ struct ParsingState {
 
   bool completed_;
   bool backslash_;
+  bool redirect_out_;
+  bool redirect_in_;
   bool error_;
   char quotes_;
   std::string current_arg_;

@@ -44,6 +44,10 @@ struct Command {
  private:
   std::vector<char*> argv_; // stores pointers to the data (for use in exec*)
   std::vector<std::string> args_; // stores the data
+ 
+ public:
+  bool is_redirect_in;
+  bool is_redirect_out;
 };
 
 };

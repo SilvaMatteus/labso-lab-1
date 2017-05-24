@@ -8,10 +8,14 @@ namespace xeu_utils {
 
 Command::Command() {
   argv_.push_back(0);
+  is_redirect_in = false;
+  is_redirect_out = false;
 }
 
 Command::Command(const Command& other) {
     argv_.push_back(0);
+    is_redirect_in = other.is_redirect_in;
+    is_redirect_out = other.is_redirect_out;
     for (int i = 0; i < other.args_.size(); i++) {
         add_arg(other.args_[i]);
     }
@@ -22,6 +26,8 @@ Command& Command::operator=(const Command& other) {
     args_.clear();
     argv_.clear();
     argv_.push_back(0);
+    is_redirect_in = other.is_redirect_in;
+    is_redirect_out = other.is_redirect_out;
     for (int i = 0; i < other.args_.size(); i++) {
         add_arg(other.args_[i]);
     }
