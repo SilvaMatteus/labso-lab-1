@@ -9,6 +9,9 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <pwd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 using namespace xeu_utils;
 using namespace std;
@@ -16,7 +19,7 @@ using namespace std;
 #ifndef HOST_NAME_MAX
     #define HOST_NAME_MAX _POSIX_HOST_NAME_MAX
 #endif
-
+#define DEFAULT_PERMISSION_MODE 0644
 int main(int argc, char **argv)
 {
     passwd* user = getpwuid(getuid());
@@ -36,7 +39,7 @@ int main(int argc, char **argv)
     pid_t pid, wpid;
 
     int** fd;
-
+    int* fdr;
     long cwd_size;
     char *cwd_buf;
     char *cwd_ptr;
@@ -61,6 +64,7 @@ int main(int argc, char **argv)
         #endif
 
         fd = (int**) malloc(commands.size()*sizeof(int*));
+        fdr = (int*) malloc(commands.size()*sizeof(int));
 
         for (size_t i = 0; i < commands.size(); i++)
         {
@@ -94,8 +98,17 @@ int main(int argc, char **argv)
                 {
                     if (i < commands.size() - 1) // i STDOUT
                     {
-                        close(fd[i][0]);
-                        dup2(fd[i][1], STDOUT_FILENO);
+                        if (commands[i + 1].is_redirect_out)
+                        {
+                            close(fd[i][0]);
+                            fdr[i + 1] = creat(commands[i + 1].filename(), DEFAULT_PERMISSION_MODE);
+                            dup2(fdr[i + 1], STDOUT_FILENO);
+                        }
+                        else
+                        {
+                            close(fd[i][0]);
+                            dup2(fd[i][1], STDOUT_FILENO);
+                        }
                     }
                     if (i > 0) // i-1 STDIN
                     {
@@ -115,6 +128,10 @@ int main(int argc, char **argv)
             }
             else
             {
+                if (i < commands.size() - 1 && commands[i + 1].is_redirect_out)
+                {
+                    i++;
+                }
                 close(fd[i][1]);
                 #ifdef DEBUG
                     printf("PID %d: waiting for child\n", getpid());
