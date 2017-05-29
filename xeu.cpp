@@ -40,6 +40,8 @@ int main(int argc, char **argv)
 
     int** fd;
     int* fdr;
+    size_t i, j;
+
     long cwd_size;
     char *cwd_buf;
     char *cwd_ptr;
@@ -66,13 +68,13 @@ int main(int argc, char **argv)
         fd = (int**) malloc(commands.size()*sizeof(int*));
         fdr = (int*) malloc(commands.size()*sizeof(int));
 
-        for (size_t i = 0; i < commands.size(); i++)
+        for (i = 0; i < commands.size(); i++)
         {
             fd[i] = (int*) malloc(sizeof(int)*2);
             if (pipe(fd[i]) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
         }
 
-        for (size_t i = 0; i < commands.size(); i++)
+        for (i = 0; i < commands.size(); i++)
         {
             c = commands[i];
             int code;
@@ -96,7 +98,7 @@ int main(int argc, char **argv)
             {
                 if (commands.size() > 1)
                 {
-                    if (i < commands.size() - 1) // i STDOUT
+                    if (i < commands.size() - 1)
                     {
                         if (commands[i + 1].is_redirect_out)
                         {
@@ -110,7 +112,7 @@ int main(int argc, char **argv)
                             dup2(fd[i][1], STDOUT_FILENO);
                         }
                     }
-                    if (i > 0) // i-1 STDIN
+                    if (i > 0)
                     {
                         close(fd[i - 1][1]);
                         dup2(fd[i - 1][0], STDIN_FILENO);
@@ -128,11 +130,12 @@ int main(int argc, char **argv)
             }
             else
             {
-                if (i < commands.size() - 1 && commands[i + 1].is_redirect_out)
+                close(fd[i][1]);
+                // consume all redirections before process next Command
+                while (i < commands.size() - 1 && (commands[i + 1].is_redirect_out || commands[i + 1].is_redirect_in))
                 {
                     i++;
                 }
-                close(fd[i][1]);
                 #ifdef DEBUG
                     printf("PID %d: waiting for child\n", getpid());
 
@@ -152,6 +155,7 @@ int main(int argc, char **argv)
             free(fd[i]);
         }
         free(fd);
+        free(fdr);
     }
 
     return 0;
